@@ -1,14 +1,14 @@
 # ACIDRATCHET MF79
 
-A single-file, browser-based **TB-303 acid synthesizer** — no install, no account, no cloud. Open the HTML file and it runs.
+A single-file, browser-based **TB-303 inspired acid synthesizer** — no install, no account, no cloud. Open the HTML file and it runs.
 
 ## What it is
 
-A digital recreation of the classic 303 acid bassline machine, built as one self-contained HTML file with a real-time **AudioWorklet** DSP engine. It runs equally as a **web tool** (deploy anywhere, e.g. Netlify) or as a **standalone offline app** (save the file, open it locally — works without a connection).
+A digital inspired recreation of the legendary classic 303 acid bassline machine, built as one self-contained HTML file with a real-time **AudioWorklet** >>DSP engine<<. It runs equally*) as a **web tool** (deploy) or as a **standalone offline app** (save the file, open it locally — works without a connection).
 
 ## Highlights / USPs
 
-- **Single file, zero dependencies.** One `.html` — no build step, no libraries, no server. Fully offline-capable.
+- **Single file, zero dependencies.** One `.html` — no build step, no brench libraries, no server. Fully offline-capable.*) possibly trigeringfallbackenngine
 - **Authentic 303 DSP, not a clone-by-numbers.** Diode-style ladder filter with genuine self-oscillation, tuned to sit on the musical "knack" just below the whistle.
 - **Real accent circuit.** Models the accumulating capacitor behavior — consecutive accents climb (the classic acid screw-up), sweeping the filter, not the pitch.
 - **AudioWorklet engine.** Sample-accurate, low-latency, runs off the main thread.
