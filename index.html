@@ -454,9 +454,16 @@ function makeVoice(sr,os){ os=os||1;
       var r=raw,kk,sc=1-Math.exp(-n/(0.010*sr));
       for(kk in r){ sm[kk]+=(r[kk]-sm[kk])*sc; }
       var wave=Math.round(r.wave),dirty=r.dirty>0.5,lfoWave=Math.round(r.lfoWave);
-      var baseHz=34*Math.pow(150,sm.cutoff);              // 34..5100 Hz, keeps the sweep useful without turning brittle
-      var envDepth=Math.pow(sm.env,0.88)*2.85;            // musical 303 sweep range, not a siren generator
-      var resoK=Math.pow(sm.reso,1.12)*3.72;              // acid bite; true self-oscillation reserved for extreme stacking
+      /* ACIDRATCHET-303 v5.5 CUT/RES MAP
+         Goal: move cutoff grip earlier, widen the sweet spot, and let the top open
+         without falling into sterile self-oscillation / whistle behaviour.
+         Previous: baseHz = 34 * 150^cutoff  -> 34..5100 Hz, action late.
+      */
+      var cut=sm.cutoff;
+      var cutCurve=0.075+0.925*Math.pow(cut,0.64);        // earlier response; 45% behaves closer to former ~62%
+      var baseHz=30*Math.pow(245,cutCurve);               // ~45..7350 Hz musical range, more top authority
+      var envDepth=Math.pow(sm.env,0.82)*3.22;            // stronger sweep, still controlled by limiter below
+      var resoK=Math.pow(sm.reso,1.08)*3.92;              // more bite before hard cap; avoids pure sine whistle
       var coefF=Math.exp(-1/((0.05*Math.pow(40,sm.decay))*sr));   // normal filter-env decay 0.05..2.0s
       var coefFacc=Math.exp(-1/(0.11*sr));                       // ACCENT = fastest filter decay (~110ms)
       /* --- TB-303 ACCENT SWEEP CIRCUIT: accent pushes cutoff/env/VCA, not runaway resonance. --- */
@@ -495,7 +502,11 @@ function makeVoice(sr,os){ os=os||1;
         if(subAmt>0){ subPhase+=dt*0.5; if(subPhase>=1)subPhase-=1; var subv=Math.tanh(2.5*Math.sin(TWO_PI*subPhase)); osc=(osc+subv*subAmt)/(1+subAmt*0.55); }
         var fc=baseHz*Math.pow(2, envDepth*envF + accSweep*accFiltDepth + lfoOct*lfoVal);   // env sweep + accent WOW + LFO
         if(fc<24)fc=24; if(fc>fcMax)fc=fcMax;
-        var g=1-Math.exp(-2*Math.PI*fc/(sr*os)); var k=resoK+sm.squelch*0.28+accSweep*0.08; if(lfoTarget===3){ k+=lfoVal*lfoAmt*1.15; if(k<0)k=0; } if(k>4.15)k=4.15; if(fc>6500)k*=Math.sqrt(6500/fc);
+        var g=1-Math.exp(-2*Math.PI*fc/(sr*os));
+        var k=resoK+sm.squelch*0.32+accSweep*0.10;
+        if(lfoTarget===3){ k+=lfoVal*lfoAmt*1.15; if(k<0)k=0; }
+        if(k>4.22)k=4.22;                                 // hard ceiling: bite, not whistle
+        if(fc>7200)k*=Math.sqrt(7200/fc);                  // keep high cutoff alive longer than previous 6500 rolloff
         var pd=preDrive; if(lfoTarget===4){ pd=preDrive*(1+lfoVal*lfoAmt*0.8); if(pd<0)pd=0; }
         var inSig=osc*pd*(1+k*0.025),fout=0;              // subtle reso compensation, oscillator remains the carrier
         for(var ov=0;ov<os;ov++){
